@@ -30,6 +30,8 @@ FROM python:3.12-slim
 WORKDIR /app
 
 ENV FLASK_CONFIG=production
+# Default listen port; Render (and similar) set PORT at runtime.
+ENV PORT=5001
 
 RUN pip install --no-cache-dir gunicorn
 
@@ -45,4 +47,5 @@ COPY --from=frontend-build /app/frontend/dist /app/static-frontend
 # (slow cold start; ensures trip planner works without manual Shell).
 EXPOSE 5001
 
-CMD ["/bin/sh", "-c", "python seed_static_data.py && exec gunicorn --bind 0.0.0.0:$${PORT:-5001} --workers 2 --timeout 120 run:app"]
+# Use $$ so the image stores a literal $PORT for the shell; avoid ${PORT:-...} (breaks on some registries).
+CMD ["/bin/sh", "-c", "python seed_static_data.py && exec gunicorn --bind 0.0.0.0:$$PORT --workers 2 --timeout 120 run:app"]

@@ -20,19 +20,13 @@ The repository now contains:
 - [NYC Transit Hub — real-time backend for NYC subway data](https://docs.google.com/presentation/d/1a5nk_BQl84HaPmNI_XKNWKxSKkgnM-B8p9Py137upOo/edit?usp=sharing)
 - [NYC Transit Hub — final presentation](https://docs.google.com/presentation/d/1_IX3lq7S5B9HAVFCbAPYgUlXwpmK0-Fm/edit?usp=sharing&ouid=107001112435913949886&rtpof=true&sd=true)
 
-## Deployment (Render, Docker)
+## Deployment (Docker & Render)
 
-The production image **runs `seed_static_data.py` on every container start**, then **Gunicorn** (`run:app`). That populates `stop_edges` and static GTFS so the **trip planner** works without using Render Shell. First request after a cold start may take **1–2 minutes** while the seed downloads and processes data.
+This repository includes a **multi-stage `Dockerfile`** at the project root: it installs the Python stack, builds the Vite frontend into `static-frontend`, sets **`FLASK_CONFIG=production`**, and defines a container entrypoint that runs **`seed_static_data.py`** on each start (to load static GTFS and **`stop_edges`** for trip planning) and then **Gunicorn** on `run:app`, binding to **`$PORT`** (default **5001** via `ENV` in the image; Render injects `PORT` at runtime). A **`.dockerignore`** narrows the build context.
 
-**In the Render Web Service settings:**
+The **live API** linked above is deployed on **Render** as a Docker-based web service. Runtime configuration (for example **`GEMINI_API_KEY`** for the chat route, or **`CORS_ORIGINS`** when the static frontend and API are on different origins) is supplied through that environment. The service uses Render’s **`PORT`** where provided. Cold starts can take on the order of **one to two minutes** while the seed step downloads and processes MTA static data.
 
-- **Leave “Docker Command” / custom start command empty** so Render uses the `CMD` in the `Dockerfile` (do not paste `cd /app && …` without `sh -c`, or the deploy will fail with status 127).
-- Set **environment variables** as needed, for example:
-  - `GEMINI_API_KEY` — required for `/api/chat`
-  - `CORS_ORIGINS` — your static site origin (e.g. the `https://…onrender.com` URL of the frontend) if the browser calls the API from another host
-- Optional: set **internal HTTP port** to match the process. The container binds to **`$PORT`**, or **5001** if `PORT` is unset.
-
-Ephemeral filesystem: redeploys reset the local SQLite file unless you attach a [persistent disk](https://render.com/docs/disks) for `data/`.
+SQLite under **`data/transit.db`** lives on the instance filesystem; on a typical PaaS deploy without a mounted volume, that storage is **ephemeral**, so a new container or redeploy starts from a fresh database until the seed step runs again. A [persistent disk](https://render.com/docs/disks) would be required to keep the same file across deploys without reseeding.
 
 ## Setup
 
