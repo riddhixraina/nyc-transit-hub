@@ -20,6 +20,20 @@ The repository now contains:
 - [NYC Transit Hub — real-time backend for NYC subway data](https://docs.google.com/presentation/d/1a5nk_BQl84HaPmNI_XKNWKxSKkgnM-B8p9Py137upOo/edit?usp=sharing)
 - [NYC Transit Hub — final presentation](https://docs.google.com/presentation/d/1_IX3lq7S5B9HAVFCbAPYgUlXwpmK0-Fm/edit?usp=sharing&ouid=107001112435913949886&rtpof=true&sd=true)
 
+## Deployment (Render, Docker)
+
+The production image **runs `seed_static_data.py` on every container start**, then **Gunicorn** (`run:app`). That populates `stop_edges` and static GTFS so the **trip planner** works without using Render Shell. First request after a cold start may take **1–2 minutes** while the seed downloads and processes data.
+
+**In the Render Web Service settings:**
+
+- **Leave “Docker Command” / custom start command empty** so Render uses the `CMD` in the `Dockerfile` (do not paste `cd /app && …` without `sh -c`, or the deploy will fail with status 127).
+- Set **environment variables** as needed, for example:
+  - `GEMINI_API_KEY` — required for `/api/chat`
+  - `CORS_ORIGINS` — your static site origin (e.g. the `https://…onrender.com` URL of the frontend) if the browser calls the API from another host
+- Optional: set **internal HTTP port** to match the process. The container binds to **`$PORT`**, or **5001** if `PORT` is unset.
+
+Ephemeral filesystem: redeploys reset the local SQLite file unless you attach a [persistent disk](https://render.com/docs/disks) for `data/`.
+
 ## Setup
 
 ```bash

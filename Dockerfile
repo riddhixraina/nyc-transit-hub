@@ -29,6 +29,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+ENV FLASK_CONFIG=production
+
 RUN pip install --no-cache-dir gunicorn
 
 COPY requirements.txt .
@@ -39,6 +41,8 @@ COPY app/ app/
 COPY data/ data/
 COPY --from=frontend-build /app/frontend/dist /app/static-frontend
 
+# Bind to $PORT in production (e.g. Render). Seed stop_edges and static GTFS on every start
+# (slow cold start; ensures trip planner works without manual Shell).
 EXPOSE 5001
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "2", "--timeout", "120", "run:app"]
+CMD ["/bin/sh", "-c", "python seed_static_data.py && exec gunicorn --bind 0.0.0.0:$${PORT:-5001} --workers 2 --timeout 120 run:app"]
