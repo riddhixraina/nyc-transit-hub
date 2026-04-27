@@ -25,3 +25,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.claude/
+
+# GTFS extracts (downloaded by seed_static_data.py; large, regenerable)
+data/static/stop_times.txt
+data/static/trips.txt

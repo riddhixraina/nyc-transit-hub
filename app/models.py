@@ -88,6 +88,21 @@ CREATE TABLE IF NOT EXISTS elevator_outages (
 );
 """
 
+CREATE_STOP_EDGES = """
+CREATE TABLE IF NOT EXISTS stop_edges (
+    route_id      TEXT NOT NULL,
+    from_stop_id  TEXT NOT NULL,
+    to_stop_id    TEXT NOT NULL,
+    seconds       INTEGER NOT NULL,
+    PRIMARY KEY (route_id, from_stop_id, to_stop_id)
+);
+"""
+
+CREATE_STOP_EDGES_IDX = """
+CREATE INDEX IF NOT EXISTS idx_stop_edges_from
+    ON stop_edges(from_stop_id);
+"""
+
 ALL_TABLES_SQL = [
     CREATE_STATIONS,
     CREATE_ROUTES,
@@ -96,4 +111,6 @@ ALL_TABLES_SQL = [
     CREATE_SERVICE_ALERTS,
     CREATE_ELEVATOR_EQUIPMENT,
     CREATE_ELEVATOR_OUTAGES,
+    CREATE_STOP_EDGES,
+    CREATE_STOP_EDGES_IDX,
 ]

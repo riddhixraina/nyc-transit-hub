@@ -103,6 +103,15 @@ def get_route(route_id):
     return jsonify({"route": route, "stops": stops})
 
 
+@subway_bp.route("/edges")
+def list_edges():
+    """Return all stop_edges so the client can run a real graph search."""
+    rows = query_db(
+        "SELECT route_id, from_stop_id, to_stop_id, seconds FROM stop_edges"
+    )
+    return jsonify(rows)
+
+
 @subway_bp.route("/search")
 def search_transit():
     """
