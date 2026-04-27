@@ -7,6 +7,18 @@ The repository now contains:
 - A Flask backend API in the project root
 - A React + Vite frontend in `frontend/`
 
+## Live demo
+
+| | URL |
+|---|-----|
+| **Backend API** | <https://nyc-transit-hub-qj5i.onrender.com> |
+| **Frontend app** | <https://nyc-transit-hub-1-5zwl.onrender.com> |
+
+## Presentations (Google Slides)
+
+- [NYC Transit Hub — real-time backend for NYC subway data](https://docs.google.com/presentation/d/1a5nk_BQl84HaPmNI_XKNWKxSKkgnM-B8p9Py137upOo/edit?usp=sharing)
+- [NYC Transit Hub — final presentation](https://docs.google.com/presentation/d/1_IX3lq7S5B9HAVFCbAPYgUlXwpmK0-Fm/edit?usp=sharing&ouid=107001112435913949886&rtpof=true&sd=true)
+
 ## Setup
 
 ```bash
