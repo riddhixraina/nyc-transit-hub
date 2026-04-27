@@ -12,6 +12,7 @@ The repository now contains:
 | | URL |
 |---|-----|
 | **Backend API** | <https://nyc-transit-hub-qj5i.onrender.com> |
+| **Backend health** | <https://nyc-transit-hub-qj5i.onrender.com/api/health> |
 | **Frontend app** | <https://nyc-transit-hub-1-5zwl.onrender.com> |
 
 ## Presentations (Google Slides)
