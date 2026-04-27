@@ -7,7 +7,7 @@ from config import config_by_name
 def create_app(config_name="development"):
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
-    CORS(app)
+    CORS(app, origins=app.config.get("CORS_ORIGINS", "*"))
 
     from app.database import close_db, init_db
 
@@ -20,11 +20,13 @@ def create_app(config_name="development"):
     from app.routes.alerts import alerts_bp
     from app.routes.accessibility import accessibility_bp
     from app.routes.status import status_bp
+    from app.routes.meta import meta_bp
 
     app.register_blueprint(subway_bp)
     app.register_blueprint(alerts_bp)
     app.register_blueprint(accessibility_bp)
     app.register_blueprint(status_bp)
+    app.register_blueprint(meta_bp)
 
     if not app.config.get("TESTING"):
         from app.services.scheduler import start_scheduler

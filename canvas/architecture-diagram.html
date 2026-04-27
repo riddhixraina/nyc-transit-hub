@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Transit Hub — Backend Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --border: #1e293b;
+      --mta-blue: #0039a6;
+      --mta-orange: #ff6319;
+      --mta-yellow: #fccc0a;
+      --mta-green: #00933c;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #60a5fa;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      animation: fadeSlideIn 0.6s ease-out;
+    }
+
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      animation: fadeSlideIn 0.6s ease-out both;
+    }
+    .pill:nth-child(1) { animation-delay: 0.1s; }
+    .pill:nth-child(2) { animation-delay: 0.15s; }
+    .pill:nth-child(3) { animation-delay: 0.2s; }
+    .pill:nth-child(4) { animation-delay: 0.25s; }
+    .pill:nth-child(5) { animation-delay: 0.3s; }
+    .pill:nth-child(6) { animation-delay: 0.35s; }
+
+    .pill .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .dot-blue   { background: var(--mta-blue); }
+    .dot-orange { background: var(--mta-orange); }
+    .dot-yellow { background: var(--mta-yellow); }
+    .dot-green  { background: var(--mta-green); }
+    .dot-accent { background: var(--accent); }
+    .dot-muted  { background: var(--text-muted); }
+
+    .diagram-section {
+      margin-bottom: 3rem;
+      animation: fadeSlideIn 0.7s ease-out 0.3s both;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      color: var(--mta-orange);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid var(--mta-orange);
+    }
+
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      overflow-x: auto;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.3s;
+    }
+    .diagram-card:hover {
+      border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+      animation: fadeSlideIn 0.7s ease-out 0.5s both;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: transform 0.2s, border-color 0.3s;
+    }
+    .legend-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .legend-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .legend-text h3 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    .legend-text p {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="container">
+
+    <header>
+      <h1>NYC Transit Hub</h1>
+      <div class="subtitle">Backend Architecture &amp; Data Flow</div>
+      <div class="pill-row">
+        <span class="pill"><span class="dot dot-blue"></span>Flask 3.1</span>
+        <span class="pill"><span class="dot dot-orange"></span>SQLite + WAL</span>
+        <span class="pill"><span class="dot dot-yellow"></span>GTFS-RT Protobuf</span>
+        <span class="pill"><span class="dot dot-green"></span>APScheduler</span>
+        <span class="pill"><span class="dot dot-accent"></span>REST API</span>
+        <span class="pill"><span class="dot dot-muted"></span>Python 3.12</span>
+      </div>
+    </header>
+
+    <!-- HIGH-LEVEL ARCHITECTURE -->
+    <div class="diagram-section">
+      <div class="section-label">High-Level Architecture</div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#334155', 'lineColor': '#60a5fa', 'secondaryColor': '#1a1a2e', 'tertiaryColor': '#0f172a', 'background': '#111827', 'mainBkg': '#111827', 'nodeBorder': '#334155', 'clusterBkg': '#0f172a', 'clusterBorder': '#1e293b', 'titleColor': '#f1f5f9', 'edgeLabelBackground': '#1e293b', 'nodeTextColor': '#f1f5f9'}}}%%
+graph LR
+    MTA["MTA Feeds\n+ NY Open Data"]
+    SCHED["APScheduler\n(Background Polling)"]
+    SVC["Services Layer\n(Parse & Normalize)"]
+    DB[("SQLite\nDatabase")]
+    API["Flask REST API\n(4 Blueprints)"]
+    CLIENTS["API Consumers\n(Web / Mobile / 3rd Party)"]
+
+    MTA -->|"Protobuf\n+ JSON"| SCHED
+    SCHED -->|"30s / 60s / 300s"| SVC
+    SVC -->|"Write"| DB
+    DB -->|"Read"| API
+    API -->|"JSON"| CLIENTS
+
+    style MTA fill:#1a0a2e,stroke:#7c3aed,stroke-width:2px,color:#f1f5f9
+    style SCHED fill:#0f1d32,stroke:#3b82f6,stroke-width:2px,color:#f1f5f9
+    style SVC fill:#0f1d32,stroke:#3b82f6,stroke-width:2px,color:#f1f5f9
+    style DB fill:#1a2e0a,stroke:#22c55e,stroke-width:2px,color:#f1f5f9
+    style API fill:#0f1d32,stroke:#3b82f6,stroke-width:2px,color:#f1f5f9
+    style CLIENTS fill:#2e1a0a,stroke:#f97316,stroke-width:2px,color:#f1f5f9
+        </pre>
+      </div>
+    </div>
+
+    <!-- DATA FLOW -->
+    <div class="diagram-section">
+      <div class="section-label">Data Ingestion Pipeline</div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#334155', 'lineColor': '#60a5fa', 'secondaryColor': '#1a1a2e', 'tertiaryColor': '#0f172a', 'background': '#111827', 'mainBkg': '#111827', 'nodeBorder': '#334155'}}}%%
+flowchart LR
+    A["MTA GTFS-RT<br/>Protobuf Binary"] -->|"HTTP GET<br/>(requests)"| B["fetch_feed()"]
+    B -->|raw bytes| C["parse_feed()<br/><i>FeedMessage</i>"]
+    C -->|FeedMessage| D{"Entity Type?"}
+    D -->|trip_update| E["extract_trip_updates()<br/><i>flatten stop_time_updates</i>"]
+    D -->|alert| F["extract_alerts()<br/><i>parse routes, stops, severity</i>"]
+    E -->|"list[dict]"| G["DELETE + bulk INSERT<br/><i>trip_updates table</i>"]
+    F -->|"list[dict]"| H["DELETE + INSERT OR REPLACE<br/><i>service_alerts table</i>"]
+    G --> I[("SQLite DB<br/>WAL Mode")]
+    H --> I
+
+    style A fill:#2d1b69,stroke:#8b5cf6
+    style I fill:#14532d,stroke:#22c55e
+    style D fill:#78350f,stroke:#f59e0b
+        </pre>
+      </div>
+    </div>
+
+    <!-- REQUEST FLOW -->
+    <div class="diagram-section">
+      <div class="section-label">API Request Flow</div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#334155', 'lineColor': '#60a5fa', 'secondaryColor': '#1a1a2e', 'tertiaryColor': '#0f172a', 'background': '#111827', 'mainBkg': '#111827', 'nodeBorder': '#334155'}}}%%
+sequenceDiagram
+    participant Client
+    participant CORS as Flask-CORS
+    participant BP as Blueprint Router
+    participant DAL as query_db()
+    participant DB as SQLite
+
+    Client->>CORS: GET /api/subway/arrivals/101
+    CORS->>BP: route to subway_bp
+    BP->>DAL: query_db(SQL, stop_id)
+    DAL->>DB: SELECT ... FROM trip_updates<br/>JOIN stations<br/>WHERE stop_id = ? OR LIKE ?<br/>ORDER BY arrival_time
+    DB-->>DAL: sqlite3.Row results
+    DAL-->>BP: list[dict]
+    BP-->>CORS: jsonify(rows)
+    CORS-->>Client: JSON + CORS headers
+        </pre>
+      </div>
+    </div>
+
+    <!-- DB SCHEMA -->
+    <div class="diagram-section">
+      <div class="section-label">Database Schema (ER Diagram)</div>
+      <div class="diagram-card">
+        <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#334155', 'lineColor': '#60a5fa', 'secondaryColor': '#1a1a2e', 'background': '#111827', 'mainBkg': '#111827', 'nodeBorder': '#334155'}}}%%
+erDiagram
+    stations {
+        TEXT stop_id PK
+        TEXT stop_name
+        REAL stop_lat
+        REAL stop_lon
+        TEXT parent_station
+        INT ada_accessible
+        TEXT borough
+        TEXT daytime_routes
+    }
+
+    routes {
+        TEXT route_id PK
+        TEXT route_short_name
+        TEXT route_long_name
+        TEXT route_color
+        TEXT route_text_color
+    }
+
+    trip_updates {
+        INT id PK
+        TEXT trip_id
+        TEXT route_id FK
+        TEXT stop_id FK
+        TEXT arrival_time
+        TEXT departure_time
+        INT delay_seconds
+        TEXT fetched_at
+    }
+
+    service_alerts {
+        INT id PK
+        TEXT alert_id UK
+        TEXT header_text
+        TEXT description_text
+        TEXT severity_level
+        TEXT effect
+        TEXT affected_routes
+        TEXT affected_stops
+        TEXT active_period_start
+        TEXT active_period_end
+        TEXT fetched_at
+    }
+
+    elevator_equipment {
+        TEXT equipment_id PK
+        TEXT equipment_type
+        TEXT station_name
+        TEXT stop_id FK
+        TEXT short_description
+        INT ada_compliant
+        TEXT lines_served
+    }
+
+    elevator_outages {
+        INT id PK
+        TEXT equipment_id FK
+        TEXT reason
+        TEXT out_of_service_date
+        TEXT estimated_return
+        INT is_upcoming
+        TEXT fetched_at
+    }
+
+    stations ||--o{ trip_updates : "stop_id"
+    routes ||--o{ trip_updates : "route_id"
+    stations ||--o| elevator_equipment : "stop_id"
+    elevator_equipment ||--o{ elevator_outages : "equipment_id"
+        </pre>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-icon" style="background: rgba(124, 58, 237, 0.15); color: #a78bfa;">📡</div>
+        <div class="legend-text">
+          <h3>External Sources</h3>
+          <p>9 GTFS-RT subway feeds, 1 alerts feed, 2 NY Open Data elevator APIs, 1 static GTFS ZIP</p>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">⚙️</div>
+        <div class="legend-text">
+          <h3>Scheduler</h3>
+          <p>APScheduler daemon threads poll feeds at 30s / 60s / 300s intervals</p>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🗄️</div>
+        <div class="legend-text">
+          <h3>SQLite + WAL</h3>
+          <p>6 tables, indexed queries, full-refresh ingestion (DELETE + INSERT)</p>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background: rgba(249, 115, 22, 0.15); color: #fb923c;">🔗</div>
+        <div class="legend-text">
+          <h3>REST API</h3>
+          <p>4 Blueprints, 13 endpoints, JSON responses, CORS-enabled</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      fontFamily: 'DM Mono, monospace',
+      fontSize: 13,
+      flowchart: { curve: 'basis', padding: 16 },
+      sequence: { mirrorActors: false, messageAlign: 'center' },
+    });
+  </script>
+</body>
+</html>

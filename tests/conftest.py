@@ -107,4 +107,30 @@ def _seed_test_data():
         """
     )
 
+    db.execute(
+        """
+        INSERT INTO elevator_equipment (
+            equipment_id, equipment_type, station_name, stop_id,
+            short_description, ada_compliant, lines_served, travel_alternatives
+        )
+        VALUES (
+            'EQ-100', 'Elevator', 'Times Sq - 42 St', 'A15',
+            'Street to mezzanine elevator', 1, 'A C E', 'Use nearby accessible entrance'
+        )
+        """
+    )
+
+    db.execute(
+        """
+        INSERT INTO elevator_outages (
+            equipment_id, reason, out_of_service_date,
+            estimated_return, is_upcoming, fetched_at
+        )
+        VALUES (
+            'EQ-100', 'Maintenance', '2026-03-30T09:00:00+00:00',
+            '2026-03-30T15:00:00+00:00', 0, '2026-03-30T12:00:00+00:00'
+        )
+        """
+    )
+
     db.commit()

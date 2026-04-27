@@ -6,6 +6,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 class Config:
     DEBUG = False
     TESTING = False
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",") if os.getenv("CORS_ORIGINS") else "*"
     DATABASE_PATH = os.path.join(BASE_DIR, "data", "transit.db")
     STATIC_GTFS_DIR = os.path.join(BASE_DIR, "data", "static")
 

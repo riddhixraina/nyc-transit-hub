@@ -46,7 +46,7 @@ def get_alert(alert_id):
         one=True,
     )
     if row is None:
-        return jsonify({"error": "Alert not found"}), 404
+        return jsonify({"error": True, "message": "Alert not found"}), 404
     return jsonify(row)
 
 

@@ -68,7 +68,7 @@ def station_accessibility(stop_id):
         one=True,
     )
     if station is None:
-        return jsonify({"error": "Station not found"}), 404
+        return jsonify({"error": True, "message": "Station not found"}), 404
 
     equipment = query_db(
         "SELECT * FROM elevator_equipment WHERE stop_id = ?",

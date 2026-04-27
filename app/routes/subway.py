@@ -39,7 +39,7 @@ def get_stop(stop_id):
     """Return detail for a single station by stop_id."""
     row = query_db("SELECT * FROM stations WHERE stop_id = ?", (stop_id,), one=True)
     if row is None:
-        return jsonify({"error": "Station not found"}), 404
+        return jsonify({"error": True, "message": "Station not found"}), 404
     return jsonify(row)
 
 
@@ -89,7 +89,7 @@ def get_route(route_id):
         "SELECT * FROM routes WHERE route_id = ?", (route_id,), one=True
     )
     if route is None:
-        return jsonify({"error": "Route not found"}), 404
+        return jsonify({"error": True, "message": "Route not found"}), 404
 
     stops = query_db(
         """
@@ -101,3 +101,45 @@ def get_route(route_id):
     )
 
     return jsonify({"route": route, "stops": stops})
+
+
+@subway_bp.route("/search")
+def search_transit():
+    """
+    Search both station and route metadata for a frontend quick-search box.
+
+    Query params:
+        q      -- required free-text query
+        limit  -- max number of routes/stops to return per section
+    """
+    query = request.args.get("q", "").strip()
+    limit = request.args.get("limit", 10, type=int)
+
+    if not query:
+        return jsonify({"error": True, "message": "Query parameter 'q' is required"}), 400
+
+    like = f"%{query}%"
+    stops = query_db(
+        """
+        SELECT * FROM stations
+        WHERE stop_name LIKE ?
+           OR stop_id LIKE ?
+           OR daytime_routes LIKE ?
+        ORDER BY stop_name
+        LIMIT ?
+        """,
+        (like, like, like, limit),
+    )
+    routes = query_db(
+        """
+        SELECT * FROM routes
+        WHERE route_id LIKE ?
+           OR route_short_name LIKE ?
+           OR route_long_name LIKE ?
+        ORDER BY route_id
+        LIMIT ?
+        """,
+        (like, like, like, limit),
+    )
+
+    return jsonify({"query": query, "stops": stops, "routes": routes})
