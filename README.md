@@ -22,7 +22,7 @@ The repository now contains:
 
 ## Deployment (Docker & Render)
 
-This repository includes a **multi-stage `Dockerfile`** at the project root: it installs the Python stack, builds the Vite frontend into `static-frontend`, sets **`FLASK_CONFIG=production`**, and defines a container entrypoint that runs **`seed_static_data.py`** on each start (to load static GTFS and **`stop_edges`** for trip planning) and then **Gunicorn** on `run:app`, binding to **`$PORT`** (default **5001** via `ENV` in the image; Render injects `PORT` at runtime). A **`.dockerignore`** narrows the build context.
+This repository includes a **multi-stage `Dockerfile`** at the project root and a **`docker-entrypoint.sh`** script: the image installs the Python stack, builds the Vite frontend into `static-frontend`, sets **`FLASK_CONFIG=production`** and a default **`PORT=5001`**, and on each start runs **`seed_static_data.py`** (static GTFS and **`stop_edges`** for trip planning) then **Gunicorn** on `run:app` with the bind port taken from **`PORT`**. A **`.dockerignore`** narrows the build context.
 
 The **live API** linked above is deployed on **Render** as a Docker-based web service. Runtime configuration (for example **`GEMINI_API_KEY`** for the chat route, or **`CORS_ORIGINS`** when the static frontend and API are on different origins) is supplied through that environment. The service uses Render’s **`PORT`** where provided. Cold starts can take on the order of **one to two minutes** while the seed step downloads and processes MTA static data.
 

@@ -39,13 +39,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY config.py run.py seed_static_data.py ./
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 COPY app/ app/
 COPY data/ data/
 COPY --from=frontend-build /app/frontend/dist /app/static-frontend
 
-# Bind to $PORT in production (e.g. Render). Seed stop_edges and static GTFS on every start
-# (slow cold start; ensures trip planner works without manual Shell).
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Seed on start, then gunicorn (port from env; see docker-entrypoint.sh).
 EXPOSE 5001
 
-# Use $$ so the image stores a literal $PORT for the shell; avoid ${PORT:-...} (breaks on some registries).
-CMD ["/bin/sh", "-c", "python seed_static_data.py && exec gunicorn --bind 0.0.0.0:$$PORT --workers 2 --timeout 120 run:app"]
+CMD ["/app/docker-entrypoint.sh"]
