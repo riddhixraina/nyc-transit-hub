@@ -1,25 +1,31 @@
-import { Menu, Languages, UserCircle2 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Menu, UserCircle2, MessageCircle } from "lucide-react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../lib/auth";
 import { cn } from "../../lib/utils";
+import { BackButton } from "../common/BackButton";
+import { LanguageSelector } from "../common/LanguageSelector";
 
 const navItems = [
   { to: "/", key: "home" },
+  { to: "/planner", key: "tripPlanner" },
   { to: "/dashboard", key: "dashboard" },
   { to: "/stations", key: "stations" },
   { to: "/routes", key: "routes" },
   { to: "/alerts", key: "alerts" },
   { to: "/accessibility", key: "accessibility" },
+  { to: "/analytics", key: "analytics" },
+  { to: "/chat", key: "chat" },
   { to: "/favorites", key: "favorites" },
   { to: "/login", key: "login" },
 ];
 
 export function AppLayout() {
   const [isOpen, setIsOpen] = useState(false);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, logOut } = useAuth();
+  const { pathname } = useLocation();
 
   return (
     <div className="min-h-screen bg-mist bg-grid-fade bg-[size:24px_24px] font-body text-ink">
@@ -71,14 +77,7 @@ export function AppLayout() {
               ))}
             </div>
             <div className="mt-4 flex items-center gap-3 lg:mt-0">
-              <button
-                type="button"
-                onClick={() => i18n.changeLanguage(i18n.language === "en" ? "es" : "en")}
-                className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink"
-              >
-                <Languages className="h-4 w-4" />
-                {i18n.language === "en" ? t("spanish") : t("english")}
-              </button>
+              <LanguageSelector />
               {user ? (
                 <button
                   type="button"
@@ -102,8 +101,19 @@ export function AppLayout() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <BackButton />
         <Outlet />
       </main>
+
+      {pathname !== "/chat" && (
+        <NavLink
+          to="/chat"
+          className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white shadow-lg transition hover:scale-105 hover:bg-tide"
+          aria-label={t("chat")}
+        >
+          <MessageCircle className="h-6 w-6" />
+        </NavLink>
+      )}
     </div>
   );
 }

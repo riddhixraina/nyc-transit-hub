@@ -1,5 +1,6 @@
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getAlerts } from "../api/alerts";
 import { getHealth, getStatusSummary } from "../api/status";
@@ -13,6 +14,7 @@ import { SectionTitle } from "../components/common/SectionTitle";
 import { StatusSummaryCard } from "../components/dashboard/StatusSummaryCard";
 
 export function HomePage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
 
@@ -49,10 +51,10 @@ export function HomePage() {
       <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
         <div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-panel">
           <p className="text-xs font-semibold uppercase tracking-[0.32em] text-tide">
-            NYC subway pulse
+            {t("nycSubwayPulse")}
           </p>
           <h1 className="mt-4 max-w-2xl font-display text-5xl leading-tight text-ink">
-            A live operations dashboard for routes, stations, arrivals, alerts, and accessibility.
+            {t("heroTitle")}
           </h1>
           <p className="mt-4 max-w-2xl text-base text-slate">
             The frontend is connected directly to your Flask backend and uses
@@ -70,7 +72,7 @@ export function HomePage() {
               <div className="mt-4 grid gap-3 rounded-[2rem] border border-ink/10 bg-mist/70 p-4 sm:grid-cols-2">
                 <div>
                   <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                    Matching routes
+                    {t("matchingRoutes")}
                   </p>
                   <div className="mt-3 space-y-2">
                     {searchQuery.data.routes.map((route) => (
@@ -86,7 +88,7 @@ export function HomePage() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                    Matching stations
+                    {t("matchingStations")}
                   </p>
                   <div className="mt-3 space-y-2">
                     {searchQuery.data.stops.map((stop) => (
@@ -108,25 +110,25 @@ export function HomePage() {
               to="/dashboard"
               className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white"
             >
-              Open dashboard
+              {t("openDashboard")}
             </Link>
             <Link
               to="/stations"
               className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink"
             >
-              Browse stations
+              {t("browseStationsBtn")}
             </Link>
             <Link
               to="/alerts"
               className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink"
             >
-              Review alerts
+              {t("reviewAlerts")}
             </Link>
           </div>
         </div>
         <div className="rounded-[2rem] border border-white/70 bg-ink p-8 text-white shadow-panel">
           <p className="text-xs uppercase tracking-[0.28em] text-white/60">
-            Backend health
+            {t("backendHealth")}
           </p>
           {healthQuery.isLoading ? (
             <div className="mt-4 text-sm text-white/70">Checking service...</div>
@@ -143,7 +145,7 @@ export function HomePage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl bg-white/10 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-white/50">
-                    Stations
+                    {t("stations")}
                   </p>
                   <p className="mt-2 font-display text-3xl">
                     {health.record_counts.stations}
@@ -151,7 +153,7 @@ export function HomePage() {
                 </div>
                 <div className="rounded-3xl bg-white/10 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-white/50">
-                    Alerts
+                    {t("alerts")}
                   </p>
                   <p className="mt-2 font-display text-3xl">
                     {health.record_counts.service_alerts}
@@ -168,7 +170,7 @@ export function HomePage() {
       <section className="space-y-5">
         <SectionTitle
           eyebrow="Dashboard preview"
-          title="Service summary"
+          title={t("serviceSummary")}
           description="High-level route counts make the landing page useful before the user drills into route, station, or alert details."
         />
       {summaryQuery.isLoading ? (
@@ -177,7 +179,7 @@ export function HomePage() {
         <ErrorState message={summaryQuery.error.message} />
       ) : summary ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <StatusSummaryCard label="Total lines" value={summary.total_lines} />
+          <StatusSummaryCard label={t("totalLines")} value={summary.total_lines} />
           {Object.entries(summary.breakdown).map(([label, value]) => (
             <StatusSummaryCard key={label} label={label} value={value} />
           ))}
@@ -193,7 +195,7 @@ export function HomePage() {
       <section className="space-y-5">
         <SectionTitle
           eyebrow="Active alerts"
-          title="Top disruption snapshot"
+          title={t("topDisruptions")}
           description="This panel surfaces the most recent alerts so the home page doubles as an operational overview."
         />
       {alertsQuery.isLoading ? (

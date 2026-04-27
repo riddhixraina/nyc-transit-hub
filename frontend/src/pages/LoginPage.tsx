@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../lib/auth";
 import { ErrorState } from "../components/common/ErrorState";
 import { SectionTitle } from "../components/common/SectionTitle";
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const { signIn, signUp, signInWithGoogle, user, isConfigured, isLoading } =
     useAuth();
   const [email, setEmail] = useState("");
@@ -38,15 +40,15 @@ export function LoginPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Auth shell"
-        title="Firebase login"
-        description="The frontend includes the planned auth layer, but it stays optional until Firebase environment variables are configured."
+        eyebrow={t("authShell")}
+        title={t("firebaseLogin")}
+        description={t("firebaseLoginDesc")}
       />
 
       <section className="mx-auto max-w-xl rounded-[2rem] border border-white/70 bg-white/90 p-8 shadow-panel">
         {user ? (
           <div>
-            <p className="text-sm text-slate">Signed in as</p>
+            <p className="text-sm text-slate">{t("signedInAs")}</p>
             <p className="mt-2 font-display text-3xl text-ink">
               {user.email || user.uid}
             </p>
@@ -55,8 +57,7 @@ export function LoginPage() {
           <>
             {!isConfigured ? (
               <div className="rounded-3xl bg-sand/60 p-4 text-sm text-ink">
-                Firebase is not configured yet. Add `VITE_FIREBASE_*` variables to
-                enable live authentication.
+                {t("firebaseNotConfigured")}
               </div>
             ) : null}
 
@@ -66,20 +67,20 @@ export function LoginPage() {
                 onClick={() => setMode("signin")}
                 className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "signin" ? "bg-ink text-white" : "bg-mist text-ink"}`}
               >
-                Sign in
+                {t("signIn")}
               </button>
               <button
                 type="button"
                 onClick={() => setMode("signup")}
                 className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "signup" ? "bg-ink text-white" : "bg-mist text-ink"}`}
               >
-                Create account
+                {t("createAccount")}
               </button>
             </div>
 
             <form onSubmit={onSubmit} className="mt-6 space-y-4">
               <label className="block">
-                <span className="text-sm font-semibold text-ink">Email</span>
+                <span className="text-sm font-semibold text-ink">{t("email")}</span>
                 <input
                   type="email"
                   value={email}
@@ -89,7 +90,7 @@ export function LoginPage() {
                 />
               </label>
               <label className="block">
-                <span className="text-sm font-semibold text-ink">Password</span>
+                <span className="text-sm font-semibold text-ink">{t("password")}</span>
                 <input
                   type="password"
                   value={password}
@@ -103,7 +104,7 @@ export function LoginPage() {
                 disabled={isLoading}
                 className="w-full rounded-full bg-tide px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
               >
-                {mode === "signin" ? "Sign in with email" : "Create account"}
+                {mode === "signin" ? t("signInWithEmail") : t("createAccount")}
               </button>
             </form>
 
@@ -112,7 +113,7 @@ export function LoginPage() {
               onClick={() => void onGoogle()}
               className="mt-4 w-full rounded-full border border-ink/10 bg-white px-5 py-3 text-sm font-semibold text-ink"
             >
-              Continue with Google
+              {t("continueWithGoogle")}
             </button>
           </>
         )}

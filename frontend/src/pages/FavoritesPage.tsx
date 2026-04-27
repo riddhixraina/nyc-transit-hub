@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getRoutes, getStops } from "../api/subway";
 import { EmptyState } from "../components/common/EmptyState";
 import { ErrorState } from "../components/common/ErrorState";
@@ -8,6 +9,7 @@ import { StopCard } from "../components/subway/StopCard";
 import { useFavorites } from "../lib/favorites";
 
 export function FavoritesPage() {
+  const { t } = useTranslation();
   const favorites = useFavorites();
 
   const routesQuery = useQuery({
@@ -21,7 +23,7 @@ export function FavoritesPage() {
   });
 
   if (routesQuery.isLoading || stopsQuery.isLoading) {
-    return <LoadingState label="Loading favorites..." />;
+    return <LoadingState label={t("loadingFavorites")} />;
   }
 
   if (routesQuery.isError) {
@@ -45,21 +47,21 @@ export function FavoritesPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Favorites"
-        title="Saved locally for fast demos"
+        eyebrow={t("favorites")}
+        title={t("savedLocally")}
         description="Stage one favorites are stored in localStorage so the feature works before user-specific backend persistence is added."
       />
 
       {!favoriteRoutes.length && !favoriteStops.length ? (
         <EmptyState
-          title="No favorites yet"
+          title={t("noFavoritesYet")}
           description="Star any route or station card to add it here."
         />
       ) : null}
 
       {favoriteRoutes.length ? (
         <section className="space-y-4">
-          <h2 className="font-display text-2xl text-ink">Favorite routes</h2>
+          <h2 className="font-display text-2xl text-ink">{t("favoriteRoutes")}</h2>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {favoriteRoutes.map((route) => (
               <article
@@ -67,7 +69,7 @@ export function FavoritesPage() {
                 className="rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-panel"
               >
                 <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                  Route
+                  {t("route")}
                 </p>
                 <h3 className="mt-2 font-display text-3xl text-ink">
                   {route.route_id}
@@ -83,7 +85,7 @@ export function FavoritesPage() {
 
       {favoriteStops.length ? (
         <section className="space-y-4">
-          <h2 className="font-display text-2xl text-ink">Favorite stations</h2>
+          <h2 className="font-display text-2xl text-ink">{t("favoriteStations")}</h2>
           <div className="grid gap-4 lg:grid-cols-2">
             {favoriteStops.map((stop) => (
               <StopCard key={stop.stop_id} stop={stop} />

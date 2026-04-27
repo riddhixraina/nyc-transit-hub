@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 .venv/
 venv/
 *.egg-info/
@@ -11,11 +12,20 @@ venv/
 node_modules/
 dist/
 *.tsbuildinfo
+.vite/
 
 # Env
 .env
 .env.local
 .env.*.local
+
+# Data
+data/test_transit.db
+
+# Build
+frontend/dist/
+frontend/node_modules/
+canvas/
 
 # OS
 .DS_Store
@@ -25,3 +35,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.claude/
+
+# GTFS extracts (downloaded by seed_static_data.py; large, regenerable)
+data/static/stop_times.txt
+data/static/trips.txt

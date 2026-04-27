@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getAlertsForRoute } from "../api/alerts";
 import { getRoute } from "../api/subway";
 import { AlertCard } from "../components/alerts/AlertCard";
@@ -11,6 +12,7 @@ import { StopCard } from "../components/subway/StopCard";
 import { FavoriteButton } from "../components/favorites/FavoriteButton";
 
 export function RouteDetailPage() {
+  const { t } = useTranslation();
   const { routeId = "" } = useParams();
 
   const routeQuery = useQuery({
@@ -27,7 +29,7 @@ export function RouteDetailPage() {
   });
 
   if (routeQuery.isLoading) {
-    return <LoadingState label="Loading route detail..." />;
+    return <LoadingState label={t("loadingRouteDetail")} />;
   }
 
   if (routeQuery.isError) {
@@ -37,8 +39,8 @@ export function RouteDetailPage() {
   if (!routeQuery.data) {
     return (
       <EmptyState
-        title="No route data"
-        description="The backend did not return a route detail payload."
+        title={t("noRouteData")}
+        description={t("noRouteDataDesc")}
       />
     );
   }
@@ -51,7 +53,7 @@ export function RouteDetailPage() {
       <SectionTitle
         eyebrow={routeDetail.route.route_id}
         title={routeDetail.route.route_long_name || routeDetail.route.route_id}
-        description="Route detail includes line metadata, the stations it serves, and alerts scoped to the selected line."
+        description={t("routeDetail")}
       />
 
       <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-panel">
@@ -69,7 +71,7 @@ export function RouteDetailPage() {
             </span>
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                Route detail
+                {t("routeDetail")}
               </p>
               <h2 className="mt-2 font-display text-3xl text-ink">
                 {routeDetail.route.route_id}
@@ -84,7 +86,7 @@ export function RouteDetailPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl text-ink">Stations served</h2>
+        <h2 className="font-display text-2xl text-ink">{t("stationsServed")}</h2>
         {routeDetail.stops.length ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {routeDetail.stops.map((stop) => (
@@ -93,16 +95,16 @@ export function RouteDetailPage() {
           </div>
         ) : (
           <EmptyState
-            title="No stations available"
-            description="The backend route detail did not include any stops for this line."
+            title={t("noStationsServed")}
+            description={t("noStationsServedDesc")}
           />
         )}
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl text-ink">Alerts for this route</h2>
+        <h2 className="font-display text-2xl text-ink">{t("alertsForRoute")}</h2>
         {alertsQuery.isLoading ? (
-          <LoadingState label="Loading route alerts..." />
+          <LoadingState label={t("loadingRouteAlerts")} />
         ) : alertsQuery.isError ? (
           <ErrorState message={alertsQuery.error.message} />
         ) : alerts.length ? (
@@ -113,8 +115,8 @@ export function RouteDetailPage() {
           </div>
         ) : (
           <EmptyState
-            title="No active alerts"
-            description="This route currently has no matching alert records."
+            title={t("noRouteAlerts")}
+            description={t("noRouteAlertsDesc")}
           />
         )}
       </section>

@@ -1,0 +1,44 @@
+FROM python:3.12-slim AS backend
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY config.py run.py seed_static_data.py ./
+COPY app/ app/
+COPY data/ data/
+
+EXPOSE 5001
+
+CMD ["python", "run.py"]
+
+
+FROM node:20-slim AS frontend-build
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --production=false
+
+COPY frontend/ .
+RUN npm run build
+
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir gunicorn
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY config.py run.py seed_static_data.py ./
+COPY app/ app/
+COPY data/ data/
+COPY --from=frontend-build /app/frontend/dist /app/static-frontend
+
+EXPOSE 5001
+
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "2", "--timeout", "120", "run:app"]

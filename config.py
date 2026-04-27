@@ -29,11 +29,12 @@ class Config:
         "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fall-alerts"
     )
 
+    # MTA Subway Elevator and Escalator Asset Inventory.
+    # The previous endpoints (evjd-dqpz, w3cp-5gnm) were retired by NY Open
+    # Data. We now derive both equipment list and current outages from the
+    # asset inventory's service_status field.
     ELEVATOR_EQUIPMENT_URL = (
-        "https://data.ny.gov/resource/evjd-dqpz.json"
-    )
-    ELEVATOR_OUTAGES_URL = (
-        "https://data.ny.gov/resource/w3cp-5gnm.json"
+        "https://data.ny.gov/resource/94fv-bak7.json"
     )
 
     STATIC_GTFS_ZIP_URL = (
@@ -44,6 +45,8 @@ class Config:
     POLL_SUBWAY_SECONDS = 30
     POLL_ALERTS_SECONDS = 60
     POLL_ELEVATOR_SECONDS = 300
+
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 
 class DevelopmentConfig(Config):

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getAlerts } from "../api/alerts";
 import { getRoutes } from "../api/subway";
 import { AlertCard } from "../components/alerts/AlertCard";
@@ -9,6 +10,7 @@ import { LoadingState } from "../components/common/LoadingState";
 import { SectionTitle } from "../components/common/SectionTitle";
 
 export function AlertsPage() {
+  const { t } = useTranslation();
   const [routeFilter, setRouteFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("");
 
@@ -32,8 +34,8 @@ export function AlertsPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Alerts view"
-        title="Active service alerts"
+        eyebrow={t("alertsView")}
+        title={t("activeServiceAlerts")}
         description="Route and severity filters are applied directly against the backend alert endpoints so the UI stays aligned with the current API surface."
       />
 
@@ -44,7 +46,7 @@ export function AlertsPage() {
             onChange={(event) => setRouteFilter(event.target.value)}
             className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm text-ink outline-none"
           >
-            <option value="">All routes</option>
+            <option value="">{t("allRoutes")}</option>
             {routesQuery.data?.map((route) => (
               <option key={route.route_id} value={route.route_id}>
                 {route.route_id}
@@ -56,7 +58,7 @@ export function AlertsPage() {
             onChange={(event) => setSeverityFilter(event.target.value)}
             className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm text-ink outline-none"
           >
-            <option value="">All severities</option>
+            <option value="">{t("allSeverities")}</option>
             <option value="INFO">INFO</option>
             <option value="WARNING">WARNING</option>
             <option value="SEVERE">SEVERE</option>
@@ -66,7 +68,7 @@ export function AlertsPage() {
       </section>
 
       {alertsQuery.isLoading ? (
-        <LoadingState label="Loading alerts..." />
+        <LoadingState label={t("loadingAlerts")} />
       ) : alertsQuery.isError ? (
         <ErrorState message={alertsQuery.error.message} />
       ) : alerts.length ? (
@@ -77,7 +79,7 @@ export function AlertsPage() {
         </div>
       ) : (
         <EmptyState
-          title="No alerts match the filters"
+          title={t("noAlertsMatch")}
           description="Try widening the route or severity criteria."
         />
       )}

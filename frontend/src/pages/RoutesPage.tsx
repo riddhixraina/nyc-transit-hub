@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getRoutes } from "../api/subway";
 import { EmptyState } from "../components/common/EmptyState";
@@ -8,6 +9,7 @@ import { SectionTitle } from "../components/common/SectionTitle";
 import { FavoriteButton } from "../components/favorites/FavoriteButton";
 
 export function RoutesPage() {
+  const { t } = useTranslation();
   const routesQuery = useQuery({
     queryKey: ["routes"],
     queryFn: getRoutes,
@@ -18,13 +20,13 @@ export function RoutesPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Route explorer"
-        title="All subway lines"
+        eyebrow={t("routeExplorer")}
+        title={t("allSubwayLines")}
         description="Each line card links to route detail and can be favorited locally for the stage-one personalization flow."
       />
 
       {routesQuery.isLoading ? (
-        <LoadingState label="Loading routes..." />
+        <LoadingState label={t("loadingRoutes")} />
       ) : routesQuery.isError ? (
         <ErrorState message={routesQuery.error.message} />
       ) : routes.length ? (
@@ -48,7 +50,7 @@ export function RoutesPage() {
                   </span>
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                      Route
+                      {t("route")}
                     </p>
                     <h3 className="mt-2 font-display text-2xl text-ink">
                       {route.route_id}
@@ -64,14 +66,14 @@ export function RoutesPage() {
                 to={`/routes/${route.route_id}`}
                 className="mt-5 inline-flex text-sm font-semibold text-tide"
               >
-                Open route detail
+                {t("openRouteDetail")}
               </Link>
             </article>
           ))}
         </div>
       ) : (
         <EmptyState
-          title="No routes found"
+          title={t("noRoutesFound")}
           description="The backend did not return route metadata."
         />
       )}

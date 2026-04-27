@@ -1,5 +1,11 @@
 import { apiGet } from "./client";
-import type { Equipment, Outage, StationAccessibility } from "../types/api";
+import type {
+  AccessibilityGuide,
+  AccessibilityStatsResponse,
+  Equipment,
+  Outage,
+  StationAccessibility,
+} from "../types/api";
 
 export function getEquipment(station?: string) {
   const params = new URLSearchParams();
@@ -18,4 +24,14 @@ export function getOutages() {
 
 export function getStationAccessibility(stopId: string) {
   return apiGet<StationAccessibility>(`/api/accessibility/station/${stopId}`);
+}
+
+export function getAccessibilityGuide(stopId: string) {
+  return apiGet<AccessibilityGuide>(
+    `/api/accessibility/station/${stopId}/guide`,
+  );
+}
+
+export function getAccessibilityStats() {
+  return apiGet<AccessibilityStatsResponse>("/api/accessibility/stats");
 }

@@ -21,12 +21,16 @@ def create_app(config_name="development"):
     from app.routes.accessibility import accessibility_bp
     from app.routes.status import status_bp
     from app.routes.meta import meta_bp
+    from app.routes.analytics import analytics_bp
+    from app.routes.chat import chat_bp
 
     app.register_blueprint(subway_bp)
     app.register_blueprint(alerts_bp)
     app.register_blueprint(accessibility_bp)
     app.register_blueprint(status_bp)
     app.register_blueprint(meta_bp)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(chat_bp)
 
     if not app.config.get("TESTING"):
         from app.services.scheduler import start_scheduler

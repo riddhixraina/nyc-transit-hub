@@ -33,35 +33,51 @@ def _fetch_json(url: str) -> list | dict | None:
         return None
 
 
+def _fetch_inventory(url: str) -> list:
+    """Fetch the asset inventory from data.ny.gov, paginating in 1000-row chunks."""
+    out = []
+    offset = 0
+    while True:
+        resp = _fetch_json(f"{url}?$limit=1000&$offset={offset}")
+        if resp is None:
+            break
+        chunk = resp if isinstance(resp, list) else resp.get("results", [])
+        if not chunk:
+            break
+        out.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += 1000
+    return out
+
+
 def fetch_equipment_list(app) -> int:
     """
-    Fetch the elevator/escalator equipment inventory and upsert into
-    the elevator_equipment table.
-
-    Returns the number of records stored.
+    Fetch the elevator/escalator asset inventory and upsert into the
+    elevator_equipment table.
     """
     with app.app_context():
         from flask import current_app
 
         url = current_app.config["ELEVATOR_EQUIPMENT_URL"]
-        data = _fetch_json(url)
-        if data is None:
+        equipment_list = _fetch_inventory(url)
+        if not equipment_list:
+            log.warning("No equipment records returned from %s", url)
             return 0
-
-        equipment_list = data if isinstance(data, list) else data.get("results", [])
 
         db = get_db()
         db.execute("DELETE FROM elevator_equipment")
         count = 0
         for item in equipment_list:
-            eid = str(
-                item.get("equipmentno")
-                or item.get("equipment_id")
-                or item.get("equipmentNo")
-                or ""
-            )
+            eid = str(item.get("equipment_code") or "").strip()
             if not eid:
                 continue
+            station_name = (
+                item.get("station_complex_description")
+                or item.get("station_description")
+                or item.get("station_name")
+                or ""
+            )
             db.execute(
                 """
                 INSERT OR REPLACE INTO elevator_equipment
@@ -72,13 +88,13 @@ def fetch_equipment_list(app) -> int:
                 """,
                 (
                     eid,
-                    item.get("equipmenttype", item.get("equipment_type", "")),
-                    item.get("station", item.get("station_name", "")),
-                    item.get("stop_id", ""),
-                    item.get("shortdescription", item.get("short_description", "")),
-                    1 if item.get("ADA", item.get("ada_compliant")) in ("Y", "1", 1, True) else 0,
-                    item.get("linesservedbyelevator", item.get("lines_served", "")),
-                    item.get("alternativeroute", item.get("travel_alternatives", "")),
+                    item.get("elevator_or_escalator", item.get("asset_class", "")),
+                    station_name,
+                    "",
+                    item.get("asset_class", ""),
+                    1,
+                    item.get("subway_line", ""),
+                    "",
                 ),
             )
             count += 1
@@ -89,34 +105,35 @@ def fetch_equipment_list(app) -> int:
 
 def fetch_current_outages(app) -> int:
     """
-    Fetch current elevator/escalator outages and replace the
-    elevator_outages table contents.
+    Derive current outages from the asset inventory's service_status field.
 
-    Returns the number of outage records stored.
+    The legacy real-time outages JSON feed (w3cp-5gnm) was retired. The
+    inventory dataset includes service_status values like
+    "Installed-Functioning-Out of Service" and
+    "Installed-Non Functioning-Out of Service" which represent currently
+    out-of-service equipment. We treat any status containing "Out of Service"
+    as an outage and store one row per affected equipment_code.
     """
     with app.app_context():
         from flask import current_app
 
-        url = current_app.config["ELEVATOR_OUTAGES_URL"]
-        data = _fetch_json(url)
-        if data is None:
+        url = current_app.config["ELEVATOR_EQUIPMENT_URL"]
+        items = _fetch_inventory(url)
+        if not items:
             return 0
-
-        outage_list = data if isinstance(data, list) else data.get("results", [])
 
         now = datetime.now(timezone.utc).isoformat()
         db = get_db()
         db.execute("DELETE FROM elevator_outages")
         count = 0
-        for item in outage_list:
-            eid = str(
-                item.get("equipmentno")
-                or item.get("equipment_id")
-                or item.get("equipmentNo")
-                or ""
-            )
+        for item in items:
+            status = (item.get("service_status") or "").strip()
+            if "Out of Service" not in status:
+                continue
+            eid = str(item.get("equipment_code") or "").strip()
             if not eid:
                 continue
+            reason = "Removed" if status.startswith("Removed") else status
             db.execute(
                 """
                 INSERT INTO elevator_outages
@@ -124,16 +141,9 @@ def fetch_current_outages(app) -> int:
                      estimated_return, is_upcoming, fetched_at)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (
-                    eid,
-                    item.get("reason", ""),
-                    item.get("outofservicedate", item.get("out_of_service_date", "")),
-                    item.get("estimatedreturntoservice", item.get("estimated_return", "")),
-                    1 if item.get("isupcomingoutage", item.get("is_upcoming")) in ("Y", "1", 1, True) else 0,
-                    now,
-                ),
+                (eid, reason, "", "", 0, now),
             )
             count += 1
         db.commit()
-        log.info("Stored %d elevator/escalator outage records", count)
+        log.info("Stored %d derived elevator/escalator outage records", count)
         return count

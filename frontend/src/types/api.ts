@@ -96,10 +96,34 @@ export type StationAccessibility = {
   outages: Outage[];
 };
 
+export type AccessibilityGuide = StationAccessibility & {
+  has_elevator: boolean;
+  has_escalator: boolean;
+  access_method: string;
+  estimated_travel: {
+    ambulatory_minutes: number;
+    wheelchair_minutes: number;
+  };
+  mobility_notes: string[];
+  alternatives_during_outage: string[];
+};
+
+export type AccessibilityStatsResponse = {
+  ada_stations: { accessible: number; not_accessible: number };
+  equipment: { total: number; elevators: number; escalators: number };
+  active_outages: number;
+};
+
 export type SearchResults = {
   query: string;
   stops: Station[];
   routes: Route[];
+};
+
+export type AnalyticsResponse = {
+  status_breakdown: Record<string, number>;
+  alerts_by_route: Array<{ route_id: string; count: number }>;
+  ada_stats: { accessible: number; not_accessible: number };
 };
 
 export type HealthResponse = {

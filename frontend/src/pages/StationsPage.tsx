@@ -1,5 +1,6 @@
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getRoutes, getStops } from "../api/subway";
 import { EmptyState } from "../components/common/EmptyState";
 import { ErrorState } from "../components/common/ErrorState";
@@ -9,6 +10,7 @@ import { SectionTitle } from "../components/common/SectionTitle";
 import { StopCard } from "../components/subway/StopCard";
 
 export function StationsPage() {
+  const { t } = useTranslation();
   const [routeFilter, setRouteFilter] = useState("");
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
@@ -39,8 +41,8 @@ export function StationsPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Station explorer"
-        title="Browse stops by line or name"
+        eyebrow={t("stationExplorer")}
+        title={t("browseStops")}
         description="This page uses the stops endpoint first, then applies route and text filters on top of the cached station list."
       />
 
@@ -49,14 +51,14 @@ export function StationsPage() {
           <SearchInput
             value={search}
             onChange={setSearch}
-            placeholder="Search by station name, stop ID, or route"
+            placeholder={t("searchStations")}
           />
           <select
             value={routeFilter}
             onChange={(event) => setRouteFilter(event.target.value)}
             className="rounded-full border border-ink/10 bg-white px-5 py-3 text-sm text-ink outline-none"
           >
-            <option value="">All routes</option>
+            <option value="">{t("allRoutes")}</option>
             {routesQuery.data?.map((route) => (
               <option key={route.route_id} value={route.route_id}>
                 {route.route_id}
@@ -67,7 +69,7 @@ export function StationsPage() {
       </section>
 
       {stopsQuery.isLoading ? (
-        <LoadingState label="Loading stations..." />
+        <LoadingState label={t("loadingStations")} />
       ) : stopsQuery.isError ? (
         <ErrorState message={stopsQuery.error.message} />
       ) : visibleStops.length ? (
@@ -78,7 +80,7 @@ export function StationsPage() {
         </div>
       ) : (
         <EmptyState
-          title="No stations match"
+          title={t("noStationsMatch")}
           description="Adjust the route filter or search term to see matching stations."
         />
       )}

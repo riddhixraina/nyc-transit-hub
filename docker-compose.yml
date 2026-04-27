@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=development
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  production:
+    build:
+      context: .
+    ports:
+      - "8080:5001"
+    volumes:
+      - ./data:/app/data
+    profiles:
+      - prod

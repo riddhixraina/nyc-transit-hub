@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getAlertsForRoute } from "../api/alerts";
 import { getStationAccessibility } from "../api/accessibility";
 import { getArrivals, getStop } from "../api/subway";
@@ -12,6 +13,7 @@ import { ArrivalBoard } from "../components/subway/ArrivalBoard";
 import { FavoriteButton } from "../components/favorites/FavoriteButton";
 
 export function StationDetailPage() {
+  const { t } = useTranslation();
   const { stopId = "" } = useParams();
 
   const stopQuery = useQuery({
@@ -45,7 +47,7 @@ export function StationDetailPage() {
   });
 
   if (stopQuery.isLoading) {
-    return <LoadingState label="Loading station detail..." />;
+    return <LoadingState label={t("loadingStationDetail")} />;
   }
 
   if (stopQuery.isError) {
@@ -55,8 +57,8 @@ export function StationDetailPage() {
   if (!stopQuery.data) {
     return (
       <EmptyState
-        title="No station data"
-        description="The backend did not return a station detail payload."
+        title={t("noStationData")}
+        description={t("noStationDataDesc")}
       />
     );
   }
@@ -71,7 +73,7 @@ export function StationDetailPage() {
       <SectionTitle
         eyebrow={stop.stop_id}
         title={stop.stop_name}
-        description="Station detail combines metadata, arrivals, accessibility information, and route-linked alerts into a single view."
+        description={t("loadingStationDetail")}
       />
 
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
@@ -80,7 +82,7 @@ export function StationDetailPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                  Station info
+                  {t("stationInfo")}
                 </p>
                 <h2 className="mt-3 font-display text-3xl text-ink">
                   {stop.stop_name}
@@ -90,37 +92,37 @@ export function StationDetailPage() {
             </div>
             <div className="mt-5 grid gap-3 text-sm text-slate sm:grid-cols-2">
               <p>
-                <span className="font-semibold text-ink">Routes:</span>{" "}
-                {stop.daytime_routes || "Unavailable"}
+                <span className="font-semibold text-ink">{t("routesLabel")}:</span>{" "}
+                {stop.daytime_routes || t("unavailable")}
               </p>
               <p>
-                <span className="font-semibold text-ink">Borough:</span>{" "}
-                {stop.borough || "Unavailable"}
+                <span className="font-semibold text-ink">{t("borough")}:</span>{" "}
+                {stop.borough || t("unavailable")}
               </p>
               <p>
-                <span className="font-semibold text-ink">ADA:</span>{" "}
-                {stop.ada_accessible ? "Accessible" : "No ADA flag"}
+                <span className="font-semibold text-ink">{t("adaLabel")}:</span>{" "}
+                {stop.ada_accessible ? t("accessible") : t("noAdaFlag")}
               </p>
               <p>
-                <span className="font-semibold text-ink">Parent:</span>{" "}
-                {stop.parent_station || "None"}
+                <span className="font-semibold text-ink">{t("parentStation")}:</span>{" "}
+                {stop.parent_station || t("none")}
               </p>
             </div>
           </article>
 
           {accessibilityQuery.isLoading ? (
-            <LoadingState label="Loading accessibility details..." />
+            <LoadingState label={t("loadingGuide")} />
           ) : accessibilityQuery.isError ? (
             <ErrorState message={accessibilityQuery.error.message} />
           ) : stationAccessibility ? (
             <article className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-panel">
               <p className="text-xs uppercase tracking-[0.24em] text-slate">
-                Accessibility summary
+                {t("accessibilitySummary")}
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl bg-mist p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate">
-                    Equipment units
+                    {t("equipmentUnits")}
                   </p>
                   <p className="mt-2 font-display text-4xl text-ink">
                     {stationAccessibility.equipment.length}
@@ -128,7 +130,7 @@ export function StationDetailPage() {
                 </div>
                 <div className="rounded-3xl bg-mist p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate">
-                    Current outages
+                    {t("currentOutages")}
                   </p>
                   <p className="mt-2 font-display text-4xl text-ink">
                     {stationAccessibility.outages.length}
@@ -136,27 +138,24 @@ export function StationDetailPage() {
                 </div>
               </div>
               <p className="mt-4 text-sm text-slate">
-                {stationAccessibility.station.ada_notes || "No ADA notes available."}
+                {stationAccessibility.station.ada_notes || t("noAdaNotes")}
               </p>
             </article>
           ) : (
             <EmptyState
-              title="No accessibility summary"
-              description="The backend did not return accessibility data for this station."
+              title={t("noAccessibilityData")}
+              description={t("noAccessibilityDataDesc")}
             />
           )}
         </div>
 
         <div className="space-y-6">
           <div>
-            <h2 className="font-display text-2xl text-ink">Real-time arrivals</h2>
-            <p className="mt-2 text-sm text-slate">
-              This panel refreshes every 30 seconds to match the backend trip
-              update polling cadence.
-            </p>
+            <h2 className="font-display text-2xl text-ink">{t("realtimeArrivals")}</h2>
+            <p className="mt-2 text-sm text-slate">{t("arrivalsRefreshNote")}</p>
           </div>
           {arrivalsQuery.isLoading ? (
-            <LoadingState label="Loading arrivals..." />
+            <LoadingState label={t("loadingArrivals")} />
           ) : arrivalsQuery.isError ? (
             <ErrorState message={arrivalsQuery.error.message} />
           ) : (
@@ -168,20 +167,18 @@ export function StationDetailPage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl text-ink">Related alerts</h2>
-            <p className="mt-2 text-sm text-slate">
-              Alerts are currently derived from the station’s first daytime route.
-            </p>
+            <h2 className="font-display text-2xl text-ink">{t("relatedAlerts")}</h2>
+            <p className="mt-2 text-sm text-slate">{t("relatedAlertsNote")}</p>
           </div>
           <Link
             to="/alerts"
             className="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink"
           >
-            Open full alerts
+            {t("openFullAlerts")}
           </Link>
         </div>
         {routeAlertsQuery.isLoading ? (
-          <LoadingState label="Loading related alerts..." />
+          <LoadingState label={t("loadingRelatedAlerts")} />
         ) : routeAlertsQuery.isError ? (
           <ErrorState message={routeAlertsQuery.error.message} />
         ) : relatedAlerts.length ? (
@@ -192,8 +189,8 @@ export function StationDetailPage() {
           </div>
         ) : (
           <EmptyState
-            title="No related alerts"
-            description="No active alerts were returned for the route linked to this station."
+            title={t("noRelatedAlerts")}
+            description={t("noRelatedAlertsDesc")}
           />
         )}
       </section>

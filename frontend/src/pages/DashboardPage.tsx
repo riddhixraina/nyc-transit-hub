@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getAlerts } from "../api/alerts";
 import { getRouteStatuses, getStatusSummary } from "../api/status";
 import { AlertCard } from "../components/alerts/AlertCard";
@@ -10,6 +11,7 @@ import { RouteStatusCard } from "../components/dashboard/RouteStatusCard";
 import { StatusSummaryCard } from "../components/dashboard/StatusSummaryCard";
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const summaryQuery = useQuery({
     queryKey: ["status-summary"],
     queryFn: getStatusSummary,
@@ -35,34 +37,34 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="Service status"
-        title="System dashboard"
-        description="Line health, alert volume, and the most recent disruptions are grouped here so the dashboard matches the first phase of the frontend plan."
+        eyebrow={t("lineStatus")}
+        title={t("systemDashboard")}
+        description={t("dashboardDesc")}
       />
 
       {summaryQuery.isLoading ? (
-        <LoadingState label="Loading summary cards..." />
+        <LoadingState label={t("loadingSummary")} />
       ) : summaryQuery.isError ? (
         <ErrorState message={summaryQuery.error.message} />
       ) : summary ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <StatusSummaryCard label="Total lines" value={summary.total_lines} />
+          <StatusSummaryCard label={t("totalLines")} value={summary.total_lines} />
           {Object.entries(summary.breakdown).map(([label, value]) => (
             <StatusSummaryCard key={label} label={label} value={value} />
           ))}
         </div>
       ) : (
         <EmptyState
-          title="No summary data"
+          title={t("noSummaryData")}
           description="The backend did not return a route status summary."
         />
       )}
 
       <div className="grid gap-6 xl:grid-cols-[1.5fr_0.8fr]">
         <section className="space-y-4">
-          <h3 className="font-display text-2xl text-ink">Route status cards</h3>
+          <h3 className="font-display text-2xl text-ink">{t("routeStatusCards")}</h3>
           {statusQuery.isLoading ? (
-            <LoadingState label="Loading route statuses..." />
+            <LoadingState label={t("loadingRoutes")} />
           ) : statusQuery.isError ? (
             <ErrorState message={statusQuery.error.message} />
           ) : (
@@ -75,9 +77,9 @@ export function DashboardPage() {
         </section>
 
         <section className="space-y-4">
-          <h3 className="font-display text-2xl text-ink">Recent alert panel</h3>
+          <h3 className="font-display text-2xl text-ink">{t("recentAlerts")}</h3>
           {alertsQuery.isLoading ? (
-            <LoadingState label="Loading alert panel..." />
+            <LoadingState label={t("loadingAlerts")} />
           ) : alertsQuery.isError ? (
             <ErrorState message={alertsQuery.error.message} />
           ) : alerts.length ? (
@@ -88,7 +90,7 @@ export function DashboardPage() {
             </div>
           ) : (
             <EmptyState
-              title="No active alerts"
+              title={t("noActiveAlerts")}
               description="The route dashboard currently has no alert rows to show."
             />
           )}
