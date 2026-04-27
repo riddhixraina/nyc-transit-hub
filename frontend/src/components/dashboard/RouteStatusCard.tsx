@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { RouteStatus } from "../../types/api";
+import { translateServiceStatus } from "../../lib/i18nTransit";
 
 const statusTone: Record<string, string> = {
   "Good Service": "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -10,6 +12,7 @@ const statusTone: Record<string, string> = {
 };
 
 export function RouteStatusCard({ route }: { route: RouteStatus }) {
+  const { t } = useTranslation();
   const color = route.route_color ? `#${route.route_color}` : "#112033";
 
   return (
@@ -27,7 +30,7 @@ export function RouteStatusCard({ route }: { route: RouteStatus }) {
           </span>
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-slate">
-              Route
+              {t("route")}
             </p>
             <p className="font-display text-2xl text-ink">{route.route_id}</p>
           </div>
@@ -35,17 +38,17 @@ export function RouteStatusCard({ route }: { route: RouteStatus }) {
         <span
           className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusTone[route.status] ?? "bg-slate-100 text-slate-700 border-slate-200"}`}
         >
-          {route.status}
+          {translateServiceStatus(route.status, t)}
         </span>
       </div>
       <div className="mt-5">
         <p className="text-sm text-slate">
-          {route.alert_count} active {route.alert_count === 1 ? "alert" : "alerts"}
+          {t("lineActiveAlerts", { count: route.alert_count })}
         </p>
         {route.alerts[0] ? (
           <p className="mt-2 text-sm text-ink">{route.alerts[0].header_text}</p>
         ) : (
-          <p className="mt-2 text-sm text-slate">No active alerts for this line.</p>
+          <p className="mt-2 text-sm text-slate">{t("noAlertsThisLine")}</p>
         )}
       </div>
     </Link>

@@ -14,6 +14,7 @@ import {
   Legend,
 } from "recharts";
 import { getAnalytics } from "../api/analytics";
+import { translateServiceStatus } from "../lib/i18nTransit";
 import { ErrorState } from "../components/common/ErrorState";
 import { LoadingState } from "../components/common/LoadingState";
 import { SectionTitle } from "../components/common/SectionTitle";
@@ -44,6 +45,7 @@ export function AnalyticsPage() {
 
   const statusData = Object.entries(data.status_breakdown).map(([name, value]) => ({
     name,
+    nameLabel: translateServiceStatus(name, t),
     value,
   }));
 
@@ -73,7 +75,12 @@ export function AnalyticsPage() {
                 outerRadius={110}
                 paddingAngle={3}
                 dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
+                nameKey="nameLabel"
+                label={(props) => {
+                  const pl = props as { nameLabel?: string; name?: string; value?: number };
+                  const nameLabel = pl.nameLabel ?? pl.name ?? "";
+                  return `${nameLabel}: ${pl.value ?? ""}`;
+                }}
               >
                 {statusData.map((entry) => (
                   <Cell

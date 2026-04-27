@@ -1,12 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, ArrowRight, Clock, Footprints, Repeat } from "lucide-react";
 import { getAlerts } from "../api/alerts";
 import { getRoutes, getStops } from "../api/subway";
 import { getStopEdges } from "../api/edges";
+import { API_BASE } from "../api/client";
 import { LineBullet } from "../components/planner/LineBullet";
 import { StationCombobox } from "../components/planner/StationCombobox";
 import { PlaceCombobox } from "../components/planner/PlaceCombobox";
+import { ErrorState } from "../components/common/ErrorState";
 import {
   TransitGraph,
   alertedRouteSet,
@@ -24,6 +27,7 @@ import type { Route, Station } from "../types/api";
 type Mode = "stations" | "places";
 
 export function TripPlannerPage() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("stations");
   const [fromStation, setFromStation] = useState<Station | null>(null);
   const [toStation, setToStation] = useState<Station | null>(null);
@@ -117,13 +121,39 @@ export function TripPlannerPage() {
   };
 
   const isLoading = stationsQuery.isLoading || routesQuery.isLoading || edgesQuery.isLoading;
+  const loadError = stationsQuery.error ?? edgesQuery.error;
+  const hasGraph =
+    (edgesQuery.data?.length ?? 0) > 0 && stationsForPicker.length > 0;
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!submitted) return;
+    resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [submitted, plan]);
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-panel sm:p-8">
-        <h1 className="font-display text-3xl text-ink sm:text-4xl">Where to?</h1>
+      {loadError ? (
+        <ErrorState
+          message={t("plannerLoadError", {
+            message:
+              loadError instanceof Error
+                ? loadError.message
+                : t("plannerErrorUnknown"),
+            api: API_BASE,
+          })}
+        />
+      ) : null}
+      {!isLoading && !loadError && !stationsForPicker.length ? (
+        <p className="text-sm text-coral">{t("plannerNoStationsLoaded")}</p>
+      ) : null}
+      {!isLoading && !loadError && stationsForPicker.length > 0 && (edgesQuery.data?.length ?? 0) === 0 ? (
+        <p className="text-sm text-coral">{t("plannerNoEdges")}</p>
+      ) : null}
+      <section className="overflow-visible rounded-3xl border border-white/70 bg-white/90 p-6 shadow-panel sm:p-8">
+        <h1 className="font-display text-3xl text-ink sm:text-4xl">{t("plannerTitle")}</h1>
         <p className="mt-2 max-w-xl text-sm text-slate">
-          Real-time-aware subway routing. Pick stations, or enter any address.
+          {t("plannerSubtitle")}
         </p>
 
         <div className="mt-5 inline-flex rounded-full border border-ink/10 bg-mist p-1 text-sm font-semibold">
@@ -137,7 +167,7 @@ export function TripPlannerPage() {
               mode === "stations" ? "bg-ink text-white" : "text-slate"
             }`}
           >
-            Stations
+            {t("plannerModeStations")}
           </button>
           <button
             type="button"
@@ -149,18 +179,21 @@ export function TripPlannerPage() {
               mode === "places" ? "bg-ink text-white" : "text-slate"
             }`}
           >
-            Addresses
+            {t("plannerModePlaces")}
           </button>
         </div>
 
         {isLoading ? (
-          <p className="mt-6 text-sm text-slate">Loading network graph...</p>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-6 grid gap-4 sm:grid-cols-2">
+          <p className="mt-6 text-sm text-slate">{t("plannerLoadingGraph")}</p>
+        ) : loadError ? null : (
+          <form
+            onSubmit={handleSubmit}
+            className="mt-6 grid gap-4 overflow-visible sm:grid-cols-2"
+          >
             {mode === "stations" ? (
               <>
                 <StationCombobox
-                  label="From"
+                  label={t("plannerLabelFrom")}
                   value={fromStation}
                   onChange={(s) => {
                     setFromStation(s);
@@ -168,10 +201,10 @@ export function TripPlannerPage() {
                   }}
                   stations={stationsForPicker}
                   routesById={routesById}
-                  placeholder="e.g. 14 St"
+                  placeholder={t("plannerPhStation1")}
                 />
                 <StationCombobox
-                  label="To"
+                  label={t("plannerLabelTo")}
                   value={toStation}
                   onChange={(s) => {
                     setToStation(s);
@@ -179,38 +212,39 @@ export function TripPlannerPage() {
                   }}
                   stations={stationsForPicker}
                   routesById={routesById}
-                  placeholder="e.g. 96 St"
+                  placeholder={t("plannerPhStation2")}
                 />
               </>
             ) : (
               <>
                 <PlaceCombobox
-                  label="From"
+                  label={t("plannerLabelFrom")}
                   value={fromPlace}
                   onChange={(p) => {
                     setFromPlace(p);
                     setSubmitted(false);
                   }}
-                  placeholder="e.g. 1 World Trade Center"
+                  placeholder={t("plannerPhPlace1")}
                 />
                 <PlaceCombobox
-                  label="To"
+                  label={t("plannerLabelTo")}
                   value={toPlace}
                   onChange={(p) => {
                     setToPlace(p);
                     setSubmitted(false);
                   }}
-                  placeholder="e.g. JFK Airport"
+                  placeholder={t("plannerPhPlace2")}
                 />
               </>
             )}
             <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
               <button
                 type="submit"
-                disabled={!canPlan}
+                disabled={!canPlan || !hasGraph}
                 className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                title={!hasGraph ? t("plannerNoGraphTitle") : undefined}
               >
-                Find route
+                {t("plannerFindRoute")}
               </button>
               <button
                 type="button"
@@ -218,11 +252,11 @@ export function TripPlannerPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-4 py-3 text-sm font-semibold text-ink"
               >
                 <Repeat className="h-4 w-4" />
-                Swap
+                {t("plannerSwap")}
               </button>
               {alertsQuery.data ? (
                 <span className="text-xs text-slate">
-                  {alerted.size} subway {alerted.size === 1 ? "line has" : "lines have"} an active alert
+                  {t("plannerAlertCount", { count: alerted.size })}
                 </span>
               ) : null}
             </div>
@@ -230,15 +264,17 @@ export function TripPlannerPage() {
         )}
       </section>
 
-      {submitted ? (
-        plan ? (
-          <PlanCard plan={plan} routesById={routesById} />
-        ) : (
-          <div className="rounded-3xl border border-white/70 bg-white/80 p-6 text-center text-sm text-slate shadow-panel">
-            No route found. Try a closer pair, or switch modes.
-          </div>
-        )
-      ) : null}
+      <div ref={resultRef} className="scroll-mt-8">
+        {submitted ? (
+          plan ? (
+            <PlanCard plan={plan} routesById={routesById} />
+          ) : (
+            <div className="rounded-3xl border border-white/70 bg-white/80 p-6 text-center text-sm text-slate shadow-panel">
+              {t("plannerNoRoute")}
+            </div>
+          )
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -250,16 +286,19 @@ function PlanCard({
   plan: RoutePlan;
   routesById: Map<string, Route>;
 }) {
+  const { t } = useTranslation();
   const transferCount = plan.legs.filter((l) => l.kind === "transfer").length;
   const tagline =
-    transferCount === 0 ? "Direct" : `${transferCount} transfer${transferCount > 1 ? "s" : ""}`;
+    transferCount === 0
+      ? t("plannerTaglineDirect")
+      : t("plannerTaglineTransfer", { count: transferCount });
 
   return (
     <article className="rounded-3xl border border-white/70 bg-white/95 p-6 shadow-panel">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="flex items-baseline gap-3">
           <span className="text-xs font-semibold uppercase tracking-[0.24em] text-slate">
-            Best route
+            {t("plannerBestRoute")}
           </span>
           <span className="text-xs font-semibold uppercase tracking-[0.24em] text-tide">
             {tagline}
@@ -276,8 +315,9 @@ function PlanCard({
           <li className="flex items-center gap-3 text-sm text-slate">
             <Footprints className="h-4 w-4" />
             <span>
-              {Math.round(plan.totalWalkSeconds / 60)} min walking total (entry +
-              exit)
+              {t("plannerWalkTotal", {
+                minutes: Math.round(plan.totalWalkSeconds / 60),
+              })}
             </span>
           </li>
         ) : null}
@@ -290,14 +330,9 @@ function PlanCard({
         <div className="mt-5 rounded-2xl border border-coral/40 bg-coral/10 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-coral">
             <AlertTriangle className="h-4 w-4" />
-            Active alert on{" "}
-            {plan.affectedRoutes.map((l, i) => (
-              <span key={l}>
-                {i > 0 ? ", " : ""}
-                <span className="font-bold">{l}</span>
-              </span>
-            ))}
-            . Travel time already includes a delay buffer.
+            {t("plannerAlertOnLines", {
+              lines: plan.affectedRoutes.join(", "),
+            })}
           </div>
         </div>
       ) : null}
@@ -312,6 +347,7 @@ function LegRow({
   leg: Leg;
   routesById: Map<string, Route>;
 }) {
+  const { t } = useTranslation();
   if (leg.kind === "ride") {
     return (
       <li className="flex flex-wrap items-center gap-3 text-sm text-ink">
@@ -320,7 +356,7 @@ function LegRow({
         <ArrowRight className="h-4 w-4 text-slate" />
         <span className="font-medium">{leg.to_name}</span>
         <span className="text-xs text-slate">
-          ({Math.round(leg.seconds / 60)} min)
+          {t("plannerLegMinutes", { minutes: Math.round(leg.seconds / 60) })}
         </span>
       </li>
     );
@@ -330,8 +366,12 @@ function LegRow({
       <li className="flex flex-wrap items-center gap-3 text-xs text-slate">
         <Repeat className="h-3.5 w-3.5" />
         <span>
-          Transfer at {leg.at_name} ({leg.from_route} → {leg.to_route},{" "}
-          {Math.round(leg.seconds / 60)} min)
+          {t("plannerTransferLeg", {
+            at: leg.at_name,
+            from: leg.from_route,
+            to: leg.to_route,
+            mins: Math.round(leg.seconds / 60),
+          })}
         </span>
       </li>
     );
@@ -340,8 +380,12 @@ function LegRow({
     <li className="flex flex-wrap items-center gap-3 text-xs text-slate">
       <Footprints className="h-3.5 w-3.5" />
       <span>
-        Walk {Math.round(leg.meters)} m from {leg.from_label} to {leg.to_label} (
-        {Math.round(leg.seconds / 60)} min)
+        {t("plannerWalkLeg", {
+          meters: Math.round(leg.meters),
+          from: leg.from_label,
+          to: leg.to_label,
+          mins: Math.round(leg.seconds / 60),
+        })}
       </span>
     </li>
   );

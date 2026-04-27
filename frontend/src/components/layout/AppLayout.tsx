@@ -37,9 +37,9 @@ export function AppLayout() {
               NY
             </span>
             <div>
-              <p className="font-display text-xl">Transit Hub</p>
+              <p className="font-display text-xl">{t("appName")}</p>
               <p className="text-xs uppercase tracking-[0.28em] text-slate">
-                Live subway control room
+                {t("appTagline")}
               </p>
             </div>
           </NavLink>
@@ -47,7 +47,7 @@ export function AppLayout() {
             type="button"
             onClick={() => setIsOpen((value) => !value)}
             className="rounded-full border border-ink/10 p-3 lg:hidden"
-            aria-label="Toggle navigation"
+            aria-label={t("toggleNav")}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -82,7 +82,7 @@ export function AppLayout() {
                 <button
                   type="button"
                   onClick={() => void logOut()}
-                  className="inline-flex items-center gap-2 rounded-full bg-tide px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex min-w-[15rem] items-center justify-center gap-2 rounded-full bg-tide px-7 py-2.5 text-sm font-semibold text-white"
                 >
                   <UserCircle2 className="h-4 w-4" />
                   {t("signOut")}
@@ -90,7 +90,7 @@ export function AppLayout() {
               ) : (
                 <NavLink
                   to="/login"
-                  className="inline-flex items-center gap-2 rounded-full bg-tide px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex min-w-[15rem] items-center justify-center gap-2 rounded-full bg-tide px-7 py-2.5 text-sm font-semibold text-white"
                 >
                   <UserCircle2 className="h-4 w-4" />
                   {t("signIn")}

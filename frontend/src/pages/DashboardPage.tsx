@@ -9,6 +9,7 @@ import { LoadingState } from "../components/common/LoadingState";
 import { SectionTitle } from "../components/common/SectionTitle";
 import { RouteStatusCard } from "../components/dashboard/RouteStatusCard";
 import { StatusSummaryCard } from "../components/dashboard/StatusSummaryCard";
+import { translateServiceStatus } from "../lib/i18nTransit";
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -50,13 +51,17 @@ export function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <StatusSummaryCard label={t("totalLines")} value={summary.total_lines} />
           {Object.entries(summary.breakdown).map(([label, value]) => (
-            <StatusSummaryCard key={label} label={label} value={value} />
+            <StatusSummaryCard
+              key={label}
+              label={translateServiceStatus(label, t)}
+              value={value}
+            />
           ))}
         </div>
       ) : (
         <EmptyState
           title={t("noSummaryData")}
-          description="The backend did not return a route status summary."
+          description={t("dashboardNoSummaryDesc")}
         />
       )}
 
@@ -91,7 +96,7 @@ export function DashboardPage() {
           ) : (
             <EmptyState
               title={t("noActiveAlerts")}
-              description="The route dashboard currently has no alert rows to show."
+              description={t("dashboardNoAlertsDesc")}
             />
           )}
         </section>

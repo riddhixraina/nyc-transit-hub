@@ -56,7 +56,7 @@ export function PlaceCombobox({ label, value, onChange, placeholder }: Props) {
   }, [value, query]);
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef} className="relative z-0 overflow-visible">
       <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate">
         {label}
       </label>
@@ -73,7 +73,7 @@ export function PlaceCombobox({ label, value, onChange, placeholder }: Props) {
         className="mt-2 w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-base text-ink shadow-sm outline-none focus:border-tide focus:ring-2 focus:ring-tide/20"
       />
       {open && (loading || hits.length > 0) ? (
-        <ul className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-ink/10 bg-white py-1 shadow-panel">
+        <ul className="absolute z-[100] mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-ink/10 bg-white py-1 shadow-2xl ring-1 ring-ink/5">
           {loading ? (
             <li className="px-4 py-2 text-xs text-slate">Searching...</li>
           ) : (

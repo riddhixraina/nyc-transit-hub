@@ -10,12 +10,12 @@ type Message = {
   sources?: string[];
 };
 
-const SUGGESTIONS = [
-  "Is the R running from Atlantic Ave to DeKalb?",
-  "Are there any delays on the A train right now?",
-  "Which lines serve Times Square?",
-  "Is the 7 train running normally today?",
-];
+const SUGGESTION_KEYS = [
+  "chatSuggest1",
+  "chatSuggest2",
+  "chatSuggest3",
+  "chatSuggest4",
+] as const;
 
 export function ChatPage() {
   const { t } = useTranslation();
@@ -47,10 +47,11 @@ export function ChatPage() {
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Something went wrong";
+      const errorMsg =
+        err instanceof Error ? err.message : t("chatErrorGeneric");
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Error: ${errorMsg}` },
+        { role: "assistant", content: t("chatErrorMessage", { message: errorMsg }) },
       ]);
     } finally {
       setLoading(false);
@@ -73,14 +74,14 @@ export function ChatPage() {
               <Bot className="mx-auto h-12 w-12 text-slate/40" />
               <p className="text-sm text-slate">{t("chatEmpty")}</p>
               <div className="flex flex-wrap justify-center gap-2 pt-2">
-                {SUGGESTIONS.map((s) => (
+                {SUGGESTION_KEYS.map((key) => (
                   <button
-                    key={s}
+                    key={key}
                     type="button"
-                    onClick={() => handleSend(s)}
+                    onClick={() => handleSend(t(key))}
                     className="rounded-full border border-ink/10 bg-mist px-4 py-2 text-xs font-semibold text-ink transition hover:bg-white"
                   >
-                    {s}
+                    {t(key)}
                   </button>
                 ))}
               </div>

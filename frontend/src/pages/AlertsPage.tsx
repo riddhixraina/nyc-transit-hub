@@ -36,7 +36,7 @@ export function AlertsPage() {
       <SectionTitle
         eyebrow={t("alertsView")}
         title={t("activeServiceAlerts")}
-        description="Route and severity filters are applied directly against the backend alert endpoints so the UI stays aligned with the current API surface."
+        description={t("alertsPageDesc")}
       />
 
       <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-panel">
@@ -80,7 +80,7 @@ export function AlertsPage() {
       ) : (
         <EmptyState
           title={t("noAlertsMatch")}
-          description="Try widening the route or severity criteria."
+          description={t("alertsFilterEmptyDesc")}
         />
       )}
     </div>

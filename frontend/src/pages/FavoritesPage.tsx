@@ -49,13 +49,13 @@ export function FavoritesPage() {
       <SectionTitle
         eyebrow={t("favorites")}
         title={t("savedLocally")}
-        description="Stage one favorites are stored in localStorage so the feature works before user-specific backend persistence is added."
+        description={t("favoritesPageDesc")}
       />
 
       {!favoriteRoutes.length && !favoriteStops.length ? (
         <EmptyState
           title={t("noFavoritesYet")}
-          description="Star any route or station card to add it here."
+          description={t("favoritesEmptyDesc")}
         />
       ) : null}
 
@@ -75,7 +75,7 @@ export function FavoritesPage() {
                   {route.route_id}
                 </h3>
                 <p className="mt-2 text-sm text-slate">
-                  {route.route_long_name || "No long name provided."}
+                  {route.route_long_name || t("noLongName")}
                 </p>
               </article>
             ))}

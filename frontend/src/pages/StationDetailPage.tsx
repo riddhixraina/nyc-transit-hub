@@ -73,7 +73,7 @@ export function StationDetailPage() {
       <SectionTitle
         eyebrow={stop.stop_id}
         title={stop.stop_name}
-        description={t("loadingStationDetail")}
+        description={t("stationDetailDesc")}
       />
 
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">

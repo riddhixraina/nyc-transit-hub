@@ -1,13 +1,15 @@
+import { useTranslation } from "react-i18next";
 import type { Arrival } from "../../types/api";
 import { formatDateTime, formatDelay } from "../../lib/utils";
 import { EmptyState } from "../common/EmptyState";
 
 export function ArrivalBoard({ arrivals }: { arrivals: Arrival[] }) {
+  const { t } = useTranslation();
   if (!arrivals.length) {
     return (
       <EmptyState
-        title="No arrivals cached"
-        description="The backend does not currently have any upcoming arrivals for this stop."
+        title={t("noArrivalsCached")}
+        description={t("noArrivalsDesc")}
       />
     );
   }

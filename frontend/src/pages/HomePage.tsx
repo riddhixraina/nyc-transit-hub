@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { getAlerts } from "../api/alerts";
 import { getHealth, getStatusSummary } from "../api/status";
 import { searchTransit } from "../api/subway";
+import { translateServiceStatus } from "../lib/i18nTransit";
 import { AlertCard } from "../components/alerts/AlertCard";
 import { EmptyState } from "../components/common/EmptyState";
 import { ErrorState } from "../components/common/ErrorState";
@@ -56,16 +57,12 @@ export function HomePage() {
           <h1 className="mt-4 max-w-2xl font-display text-5xl leading-tight text-ink">
             {t("heroTitle")}
           </h1>
-          <p className="mt-4 max-w-2xl text-base text-slate">
-            The frontend is connected directly to your Flask backend and uses
-            cached MTA feed data for fast reads, repeatable demos, and a clean
-            student-project MVP.
-          </p>
+          <p className="mt-4 max-w-2xl text-base text-slate">{t("heroSubtitle")}</p>
           <div className="mt-6 max-w-xl">
             <SearchInput
               value={search}
               onChange={setSearch}
-              placeholder="Quick search for a station or route"
+              placeholder={t("homeSearchPlaceholder")}
             />
             {searchQuery.isSuccess &&
             (searchQuery.data.routes.length || searchQuery.data.stops.length) ? (
@@ -131,15 +128,15 @@ export function HomePage() {
             {t("backendHealth")}
           </p>
           {healthQuery.isLoading ? (
-            <div className="mt-4 text-sm text-white/70">Checking service...</div>
+            <div className="mt-4 text-sm text-white/70">{t("checkingService")}</div>
           ) : healthQuery.isError ? (
-            <div className="mt-4 text-sm text-white/70">Health endpoint unavailable.</div>
+            <div className="mt-4 text-sm text-white/70">{t("healthEndpointUnavailable")}</div>
           ) : health ? (
             <div className="mt-6 space-y-4">
               <div>
                 <p className="text-4xl font-display">{health.status}</p>
                 <p className="mt-1 text-sm text-white/70">
-                  Scheduler {health.scheduler_enabled ? "enabled" : "disabled"}
+                  {health.scheduler_enabled ? t("schedulerStateOn") : t("schedulerStateOff")}
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -162,44 +159,48 @@ export function HomePage() {
               </div>
             </div>
           ) : (
-            <div className="mt-4 text-sm text-white/70">Health data unavailable.</div>
+            <div className="mt-4 text-sm text-white/70">{t("healthDataUnavailable")}</div>
           )}
         </div>
       </section>
 
       <section className="space-y-5">
         <SectionTitle
-          eyebrow="Dashboard preview"
+          eyebrow={t("eyebrowDashPreview")}
           title={t("serviceSummary")}
-          description="High-level route counts make the landing page useful before the user drills into route, station, or alert details."
+          description={t("descServiceSummaryHome")}
         />
       {summaryQuery.isLoading ? (
-        <LoadingState label="Loading service summary..." />
+        <LoadingState label={t("homeLoadingServiceSummary")} />
       ) : summaryQuery.isError ? (
         <ErrorState message={summaryQuery.error.message} />
       ) : summary ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatusSummaryCard label={t("totalLines")} value={summary.total_lines} />
           {Object.entries(summary.breakdown).map(([label, value]) => (
-            <StatusSummaryCard key={label} label={label} value={value} />
+            <StatusSummaryCard
+              key={label}
+              label={translateServiceStatus(label, t)}
+              value={value}
+            />
           ))}
         </div>
       ) : (
         <EmptyState
-          title="No summary available"
-          description="The backend did not return a status summary payload."
+          title={t("noSummaryHomeTitle")}
+          description={t("noSummaryHomeDesc")}
         />
       )}
       </section>
 
       <section className="space-y-5">
         <SectionTitle
-          eyebrow="Active alerts"
+          eyebrow={t("eyebrowActiveAlerts")}
           title={t("topDisruptions")}
-          description="This panel surfaces the most recent alerts so the home page doubles as an operational overview."
+          description={t("descTopDisruptionsHome")}
         />
       {alertsQuery.isLoading ? (
-        <LoadingState label="Loading alerts..." />
+        <LoadingState label={t("homeLoadingAlerts")} />
       ) : alertsQuery.isError ? (
         <ErrorState message={alertsQuery.error.message} />
       ) : alerts.length ? (
@@ -210,8 +211,8 @@ export function HomePage() {
         </div>
         ) : (
           <EmptyState
-            title="No active alerts"
-            description="The backend is currently not returning any alert records."
+            title={t("noActiveAlertsHomeTitle")}
+            description={t("noActiveAlertsHomeDesc")}
           />
         )}
       </section>

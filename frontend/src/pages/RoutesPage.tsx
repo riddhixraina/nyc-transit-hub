@@ -22,7 +22,7 @@ export function RoutesPage() {
       <SectionTitle
         eyebrow={t("routeExplorer")}
         title={t("allSubwayLines")}
-        description="Each line card links to route detail and can be favorited locally for the stage-one personalization flow."
+        description={t("routesPageDesc")}
       />
 
       {routesQuery.isLoading ? (
@@ -60,7 +60,7 @@ export function RoutesPage() {
                 <FavoriteButton kind="route" value={route.route_id} />
               </div>
               <p className="mt-4 text-sm text-slate">
-                {route.route_long_name || "No long name provided."}
+                {route.route_long_name || t("noLongName")}
               </p>
               <Link
                 to={`/routes/${route.route_id}`}
@@ -74,7 +74,7 @@ export function RoutesPage() {
       ) : (
         <EmptyState
           title={t("noRoutesFound")}
-          description="The backend did not return route metadata."
+          description={t("routesNoDataDesc")}
         />
       )}
     </div>

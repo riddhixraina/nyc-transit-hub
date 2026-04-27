@@ -43,7 +43,7 @@ export function StationsPage() {
       <SectionTitle
         eyebrow={t("stationExplorer")}
         title={t("browseStops")}
-        description="This page uses the stops endpoint first, then applies route and text filters on top of the cached station list."
+        description={t("stationsPageDesc")}
       />
 
       <section className="rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-panel">
@@ -81,7 +81,7 @@ export function StationsPage() {
       ) : (
         <EmptyState
           title={t("noStationsMatch")}
-          description="Adjust the route filter or search term to see matching stations."
+          description={t("stationsNoMatchDesc")}
         />
       )}
     </div>
